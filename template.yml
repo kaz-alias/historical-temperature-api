@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Temperature API & historic data logger
+
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    PermissionsBoundary: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/${AppId}-${AWS::Region}-PermissionsBoundary'
+
+Parameters:
+  AppId:
+    Type: String
+
+Resources:
+  ExpressApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      BinaryMediaTypes: ['*/*']
+
+  ExpressLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/handlers/express-api.handler
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 60
+      Description: This lambda will proxy Express through API Gateway
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        ProxyApiRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ExpressApi
+            Path: /
+            Method: ANY
+        ProxyApiGreedy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ExpressApi
+            Path: /{proxy+}
+            Method: ANY
+
+  FetchTemperatureLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/handlers/update-temperature.handler
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 60
+      Description: This lambda will fetch the temperature at a scheduled interval
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        StartScheduledEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 hour)

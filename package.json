@@ -1,0 +1,31 @@
+{
+    "name": "historical-temperature-api",
+    "description": "",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "@vendia/serverless-express": "^4.3.11",
+        "axios": "^0.21.4",
+        "bson": "^4.5.1",
+        "express": "^4.17.1",
+        "express-mongo-sanitize": "^2.1.0",
+        "jest-environment-node": "^27.1.1",
+        "mongodb": "^4.1.1",
+        "source-map-support": "^0.5.20"
+    },
+    "devDependencies": {
+        "eslint": "^7.32.0",
+        "eslint-config-airbnb-base": "^14.2.1",
+        "eslint-plugin-import": "^2.24.2",
+        "eslint-plugin-jest": "^24.4.0",
+        "jest": "^25.4.0"
+    },
+    "scripts": {
+        "lint": "eslint ./src/**",
+        "test": "jest",
+        "invoke-lambda": "aws lambda invoke --function-name '' --region eu-west-1 --payload file://api-gateway-event.json lambda-invoke-response.json && cat lambda-invoke-response.json"
+    },
+    "jest": {
+        "testEnvironment": "./src/jest-workaround.js"
+    }
+}
